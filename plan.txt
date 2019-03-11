@@ -1,0 +1,14 @@
+==cltask==
+A command line task manager
+add tasks to a dictionary, which when displayed is sorted by priority
+
+tasks stored in a dictionary
+{'TASK NAME' : priority}
+
+1. Task Name : Priority 1
+2. Task Name : Priority 2
+3. Task Name : Priority 2
+4. Task Name : Priority 3
+
+can delete or mark as completed either by the number on the list, or by name
+completed tasks are added to a completed list along with the time and date of completion
