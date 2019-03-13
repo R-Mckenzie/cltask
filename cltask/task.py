@@ -52,6 +52,13 @@ def create_task_file():
     with open(task_file_location, 'w') as f:
         f.write('{"Example Task": 5}')
 
+def list_tasks():
+    """List the tasks in order of priority, with some nice formatting"""
+    sorted_tasks = sorted(zip(task_dictionary.values(), task_dictionary.keys()))
+    print("\n    Active Tasks: ")
+    for index, task in enumerate(sorted_tasks, 1):
+        print('{i:>8}. {task:-<50}> priority {p} '.format('-', i=index, task=task[1]+' ', p=task[0]))
+
 if __name__ == "__main__":
     #Parse arguments
     args = init_argparse()
@@ -62,17 +69,19 @@ if __name__ == "__main__":
     else:
         create_task_file()
 
-    #Operate on arguments
+    #Main body
     if args.command == "list":
         #List is the default functionality if no other commands given
-        print("Tasks:")
+        list_tasks()
     if args.command == "add":
         #Input is stored as a list because of the nargs. Here we convert it to a string split with spaces
         task_name = ' '.join(args.input)
         add_task(task_name, args.priority)
         save_tasks(task_dictionary)
+        list_tasks()
     if args.command == "done":
         print("Done")
     if args.command == "delete":
         print("Delete")
+    print(' ')
 
