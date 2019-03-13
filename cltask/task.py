@@ -96,12 +96,13 @@ def init_argparse():
             type=int, choices=[i for i in range(1,10)], default=5)
     return parser.parse_args()
 
-if __name__ == "__main__":
+def main():
     #Parse arguments
     args = init_argparse()
     user_input = ' '.join(args.input)
 
     ensure_file_exists()
+    global task_dictionary #We want the global task dictionary
     task_dictionary = load_tasks()
 
     print(' ')
@@ -121,4 +122,7 @@ if __name__ == "__main__":
         task_done(user_input, True)
     save_tasks(task_dictionary)
     print(' ')
+
+if __name__ == "__main__":
+    main()
 
