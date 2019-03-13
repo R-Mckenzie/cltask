@@ -1,0 +1,8 @@
+setup.py
+cltask/__init__.py
+cltask/task.py
+cltask.egg-info/PKG-INFO
+cltask.egg-info/SOURCES.txt
+cltask.egg-info/dependency_links.txt
+cltask.egg-info/entry_points.txt
+cltask.egg-info/top_level.txt

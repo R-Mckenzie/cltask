@@ -1,0 +1,3 @@
+[console_scripts]
+task = cltask.task:main
+
