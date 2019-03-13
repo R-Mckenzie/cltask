@@ -1,9 +1,11 @@
+import os
 import argparse
 import json
 from pathlib import Path
 
 home = str(Path.home())
 task_dictionary = {} #The working task dictionary. Global
+task_directory_location = home+"/.cltask" #The directory of the saved task list
 task_file_location = home+"/.cltask/tasks.json" #The location of the saved task list
 
 def init_argparse():
@@ -38,19 +40,17 @@ def add_task(task_name, priority):
     else:
         task_dictionary[task_name] = priority
 
-def task_file_exists():
-    """Check if there is a task file. Returns true if there is, false if not"""
-    try:
-        file=open(task_file_location, 'r')
-    except FileNotFoundError:
-        return False
-    #If we get here, the file exists. Return true
-    return True
-
 def create_task_file():
     """This gets called when the task file does not yet exist"""
     with open(task_file_location, 'w') as f:
         f.write('{"Example Task": 5, "COMPLETE" : []}')
+
+def ensure_file_exists():
+    try:
+        os.makedirs(task_directory_location)
+        create_task_file()
+    except (FileExistsError, IsADirectoryError):
+        pass
 
 def list_active_tasks():
     """List the tasks in order of priority, with some nice formatting"""
@@ -68,22 +68,28 @@ def list_completed_tasks():
     for index, task in enumerate(task_dictionary["COMPLETE"], 1):
         print('{i:>9}. {task}'.format('-', i=index, task=task))
 
-def task_done(task_name):
-    """Marks tasks that contain 'task_name' in their name as completed"""
+def task_done(task_name, delete_tasks):
+    """Marks tasks that contain 'task_name' in their name as 
+    completed, or deletes them if the terminal command is delete"""
     tasks_to_mark = []
     for task in task_dictionary.keys():
         if task.find(task_name) >= 0:
             tasks_to_mark.append(task)
     if len(tasks_to_mark) > 0:
-        print("\tDo you want to mark these tasks as completed?: ")
+        #Prompt depending on completing or deleting
+        prompt = "Do you want to delete these tasks?" if delete_tasks else "Do you want to mark these tasks as completed?"
+        print("\t{}: ".format(prompt))
         for task in tasks_to_mark:
             print("\t -{}".format(task))
-        delete_confirmation = input("\n\ty/n: ")
-        if delete_confirmation == 'y':
+        confirmation = input("\n\ty/n: ")
+        if confirmation == 'y':
             for task in tasks_to_mark:
-                task_dictionary["COMPLETE"].append(task)
+                if not delete_tasks:
+                    task_dictionary["COMPLETE"].append(task)
                 del task_dictionary[str(task)]
-            print("\n\tMarked as complete")
+            print("\tDone.")
+        else:
+            print("\tNo changes made.")
     else:
         print("\tNo tasks match '{}'".format(task_name))
 
@@ -92,11 +98,8 @@ if __name__ == "__main__":
     args = init_argparse()
     user_input = ' '.join(args.input)
 
-    #Load tasks if file exists, otherwise create it
-    if task_file_exists():
-        task_dictionary = load_tasks()
-    else:
-        create_task_file()
+    ensure_file_exists()
+    task_dictionary = load_tasks()
 
     print(' ')
     #Main body
@@ -110,10 +113,9 @@ if __name__ == "__main__":
         add_task(user_input, args.priority)
         list_active_tasks()
     if args.command == "done":
-        task_done(user_input)
+        task_done(user_input, False)
     if args.command == "delete":
-        print("Delete")
-
+        task_done(user_input, True)
     save_tasks(task_dictionary)
     print(' ')
 
