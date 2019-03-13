@@ -11,4 +11,7 @@ tasks stored in a dictionary
 4. Task Name : Priority 3
 
 can delete or mark as completed either by the number on the list, or by name
-completed tasks are added to a completed list along with the time and date of completion
+completed tasks are added to a completed list
+
+future additions:
+ -Use of config file to decide where task directory is, and maybe formatting

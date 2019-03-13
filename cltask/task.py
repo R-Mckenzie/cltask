@@ -4,42 +4,11 @@ import json
 from pathlib import Path
 
 home = str(Path.home())
-task_dictionary = {} #The working task dictionary. Global
 task_directory_location = home+"/.cltask" #The directory of the saved task list
 task_file_location = home+"/.cltask/tasks.json" #The location of the saved task list
+task_dictionary = {} #The working task dictionary. Global
 
-def init_argparse():
-    """Setup the argument parser"""
-    app_description = "cltask is a simple command line task manager"
-    parser = argparse.ArgumentParser(description=app_description)
-    parser.add_argument('command',
-            help="Which command to run",
-            choices=["add", "done", "delete", "list", "completed"], default="list", nargs='?')
-    parser.add_argument('input',
-            help="The data that the command needs to work with", nargs='*')
-    parser.add_argument('-p', '--priority',
-            help="How important this task is between 1 and 9. 1 is most important",
-            type=int, choices=[i for i in range(1,10)], default=5)
-    return parser.parse_args()
-
-def save_tasks(task_dictionary):
-    """Save the working task dictionary to the task file"""
-    with open(task_file_location, 'w') as f:
-        json.dump(task_dictionary, f)
-
-def load_tasks():
-    """Parses the task file and returns the data as a dictionary object"""
-    with open(task_file_location, 'r') as f:
-        data = json.load(f)
-    return data
-
-def add_task(task_name, priority):
-    """Add tasks to the working task dictionary"""
-    if task_name in task_dictionary.keys():
-        print("There is already a task by that name in the list. No new tasks were added.")
-    else:
-        task_dictionary[task_name] = priority
-
+#----- File Handling Functions -----#
 def create_task_file():
     """This gets called when the task file does not yet exist"""
     with open(task_file_location, 'w') as f:
@@ -52,21 +21,24 @@ def ensure_file_exists():
     except (FileExistsError, IsADirectoryError):
         pass
 
-def list_active_tasks():
-    """List the tasks in order of priority, with some nice formatting"""
-    active_tasks = task_dictionary.copy()
-    #We need to make a copy so we can ignore the "COMPLETED" key in the dictionary
-    del active_tasks["COMPLETE"]
-    sorted_tasks = sorted(zip(active_tasks.values(), active_tasks.keys()))
-    print("\tActive Tasks: ")
-    for index, task in enumerate(sorted_tasks, 1):
-        print('{i:>9}. {task:-<50}> priority {p} '.format('-', i=index, task=task[1]+' ', p=task[0]))
+def save_tasks(task_dictionary):
+    """Save the working task dictionary to the task file"""
+    with open(task_file_location, 'w') as f:
+        json.dump(task_dictionary, f)
 
-def list_completed_tasks():
-    """List the tasks in order of priority, with some nice formatting"""
-    print("\tCompleted Tasks: ")
-    for index, task in enumerate(task_dictionary["COMPLETE"], 1):
-        print('{i:>9}. {task}'.format('-', i=index, task=task))
+def load_tasks():
+    """Parses the task file and returns the data as a dictionary object"""
+    with open(task_file_location, 'r') as f:
+        data = json.load(f)
+    return data
+
+#----- Adding and Removing Tasks -----#
+def add_task(task_name, priority):
+    """Add tasks to the working task dictionary"""
+    if task_name in task_dictionary.keys():
+        print("There is already a task by that name in the list. No new tasks were added.")
+    else:
+        task_dictionary[task_name] = priority
 
 def task_done(task_name, delete_tasks):
     """Marks tasks that contain 'task_name' in their name as 
@@ -92,6 +64,37 @@ def task_done(task_name, delete_tasks):
             print("\tNo changes made.")
     else:
         print("\tNo tasks match '{}'".format(task_name))
+
+#----- Listing Tasks -----#
+def list_active_tasks():
+    """List the tasks in order of priority, with some nice formatting"""
+    active_tasks = task_dictionary.copy()
+    #We need to make a copy so we can ignore the "COMPLETED" key in the dictionary
+    del active_tasks["COMPLETE"]
+    sorted_tasks = sorted(zip(active_tasks.values(), active_tasks.keys()))
+    print("\tActive Tasks: ")
+    for index, task in enumerate(sorted_tasks, 1):
+        print('{i:>9}. {task:-<50}> priority {p} '.format('-', i=index, task=task[1]+' ', p=task[0]))
+
+def list_completed_tasks():
+    """List the tasks in order of priority, with some nice formatting"""
+    print("\tCompleted Tasks: ")
+    for index, task in enumerate(task_dictionary["COMPLETE"], 1):
+        print('{i:>9}. {task}'.format('-', i=index, task=task))
+
+def init_argparse():
+    """Setup the argument parser"""
+    app_description = "cltask is a simple command line task manager"
+    parser = argparse.ArgumentParser(description=app_description)
+    parser.add_argument('command',
+            help="Which command to run",
+            choices=["add", "done", "delete", "list", "completed"], default="list", nargs='?')
+    parser.add_argument('input',
+            help="The data that the command needs to work with", nargs='*')
+    parser.add_argument('-p', '--priority',
+            help="How important this task is between 1 and 9. 1 is most important",
+            type=int, choices=[i for i in range(1,10)], default=5)
+    return parser.parse_args()
 
 if __name__ == "__main__":
     #Parse arguments
