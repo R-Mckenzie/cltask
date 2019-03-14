@@ -51,7 +51,7 @@ def add_task(task_name, priority, task_dictionary):
 def get_matched_tasks(task_dictionary, string_to_match):
     matched_tasks = []
     for task in task_dictionary.keys():
-        if task.find(string_to_match) >= 0:
+        if task.find(string_to_match) >= 0 and task != "COMPLETE":
             matched_tasks.append(task)
     return matched_tasks
 
@@ -64,10 +64,10 @@ def print_matched_tasks_prompt(matched_tasks, delete_tasks):
         print("\t -{}".format(task))
 
 def delete_selected_tasks(task_dictionary, selected_tasks, should_delete):
-            for task in selected_tasks:
-                if not should_delete:
-                    task_dictionary["COMPLETE"].append(task)
-                delete_task(task_dictionary, str(task))
+    for task in selected_tasks:
+        if not should_delete:
+            task_dictionary["COMPLETE"].append(task)
+        delete_task(task_dictionary, str(task))
 
 def delete_task(task_dictionary, task_name):
     del task_dictionary[task_name]
@@ -147,4 +147,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
