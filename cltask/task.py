@@ -39,13 +39,21 @@ def add_task(task_name, priority, task_dictionary):
     else:
         task_dictionary[task_name] = priority
 
+def get_matched_tasks(task_dictionary, string_to_match):
+    matched_tasks = []
+    for task in task_dictionary.keys():
+        if task.find(string_to_match) >= 0:
+            matched_tasks.append(task)
+    return matched_tasks
+
+def delete_task(task_dictionary, task_name):
+    del task_dictionary[task_name]
+
 def task_done(task_name, delete_tasks, task_dictionary):
     """Marks tasks that contain 'task_name' in their name as 
     completed, or deletes them if the terminal command is delete"""
-    tasks_to_mark = []
-    for task in task_dictionary.keys():
-        if task.find(task_name) >= 0:
-            tasks_to_mark.append(task)
+    tasks_to_mark = get_matched_tasks(task_dictionary, task_name)
+
     if len(tasks_to_mark) > 0:
         #Prompt depending on completing or deleting
         prompt = "Do you want to delete these tasks?" if delete_tasks else "Do you want to mark these tasks as completed?"
@@ -57,7 +65,7 @@ def task_done(task_name, delete_tasks, task_dictionary):
             for task in tasks_to_mark:
                 if not delete_tasks:
                     task_dictionary["COMPLETE"].append(task)
-                del task_dictionary[str(task)]
+                delete_task(task_dictionary, str(task))
             print("\tDone.")
         else:
             print("\tNo changes made.")
