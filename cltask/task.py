@@ -6,7 +6,6 @@ from pathlib import Path
 home = str(Path.home())
 task_directory_location = home+"/.cltask" #The directory of the saved task list
 task_file_location = home+"/.cltask/tasks.json" #The location of the saved task list
-task_dictionary = {} #The working task dictionary. Global
 
 #----- File Handling Functions -----#
 def create_task_file():
@@ -33,14 +32,14 @@ def load_tasks():
     return data
 
 #----- Adding and Removing Tasks -----#
-def add_task(task_name, priority):
+def add_task(task_name, priority, task_dictionary):
     """Add tasks to the working task dictionary"""
     if task_name in task_dictionary.keys():
         print("There is already a task by that name in the list. No new tasks were added.")
     else:
         task_dictionary[task_name] = priority
 
-def task_done(task_name, delete_tasks):
+def task_done(task_name, delete_tasks, task_dictionary):
     """Marks tasks that contain 'task_name' in their name as 
     completed, or deletes them if the terminal command is delete"""
     tasks_to_mark = []
@@ -66,7 +65,7 @@ def task_done(task_name, delete_tasks):
         print("\tNo tasks match '{}'".format(task_name))
 
 #----- Listing Tasks -----#
-def list_active_tasks():
+def list_active_tasks(task_dictionary):
     """List the tasks in order of priority, with some nice formatting"""
     active_tasks = task_dictionary.copy()
     #We need to make a copy so we can ignore the "COMPLETED" key in the dictionary
@@ -76,7 +75,7 @@ def list_active_tasks():
     for index, task in enumerate(sorted_tasks, 1):
         print('{i:>9}. {task:-<50}> priority {p} '.format('-', i=index, task=task[1]+' ', p=task[0]))
 
-def list_completed_tasks():
+def list_completed_tasks(task_dictionary):
     """List the tasks in order of priority, with some nice formatting"""
     print("\tCompleted Tasks: ")
     for index, task in enumerate(task_dictionary["COMPLETE"], 1):
@@ -102,24 +101,23 @@ def main():
     user_input = ' '.join(args.input)
 
     ensure_file_exists()
-    global task_dictionary #We want the global task dictionary
     task_dictionary = load_tasks()
 
     print(' ')
     #Main body
     if args.command == "list":
         #List is the default functionality if no other commands given
-        list_active_tasks()
+        list_active_tasks(task_dictionary)
     if args.command == "completed":
-        list_completed_tasks()
+        list_completed_tasks(task_dictionary)
     if args.command == "add":
         #Input is stored as a list because of the nargs. Here we convert it to a string split with spaces
-        add_task(user_input, args.priority)
-        list_active_tasks()
+        add_task(user_input, args.priority, task_dictionary)
+        list_active_tasks(task_dictionary)
     if args.command == "done":
-        task_done(user_input, False)
+        task_done(user_input, False, task_dictionary)
     if args.command == "delete":
-        task_done(user_input, True)
+        task_done(user_input, True, task_dictionary)
     save_tasks(task_dictionary)
     print(' ')
 
