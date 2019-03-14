@@ -8,17 +8,26 @@ task_directory_location = home+"/.cltask" #The directory of the saved task list
 task_file_location = home+"/.cltask/tasks.json" #The location of the saved task list
 
 #----- File Handling Functions -----#
-def create_task_file():
-    """This gets called when the task file does not yet exist"""
-    with open(task_file_location, 'w') as f:
-        f.write('{"Example Task": 5, "COMPLETE" : []}')
-
-def ensure_file_exists():
+def create_task_directory():
+    """Create the task file's directory if it does not already exist"""
     try:
         os.makedirs(task_directory_location)
-        create_task_file()
-    except (FileExistsError, IsADirectoryError):
+    except (IsADirectoryError, FileExistsError):
         pass
+
+def create_task_file():
+    """Create the task file if it does not already exist"""
+    try:
+        with open(task_file_location, 'xt') as f:
+            f.write('{"Example Task": 5, "COMPLETE" : []}')
+    except FileExistsError:
+        pass
+
+def ensure_file_exists():
+    """Calls two methods that create the directory and file respectively. They are
+    created separately to account for cases where the director exists but not the file"""
+    create_task_directory()
+    create_task_file()
 
 def save_tasks(task_dictionary):
     """Save the working task dictionary to the task file"""
@@ -46,26 +55,33 @@ def get_matched_tasks(task_dictionary, string_to_match):
             matched_tasks.append(task)
     return matched_tasks
 
+def print_matched_tasks_prompt(matched_tasks, delete_tasks):
+    #Change prompt depending on completing or deleting
+    delete_prompt = "Do you want to delete these tasks?"
+    complete_prompt = "Do you want to mark these tasks as completed?"
+    print("\t{}: ".format(delete_prompt if delete_tasks else complete_prompt))
+    for task in matched_tasks:
+        print("\t -{}".format(task))
+
+def delete_selected_tasks(task_dictionary, selected_tasks, should_delete):
+            for task in selected_tasks:
+                if not should_delete:
+                    task_dictionary["COMPLETE"].append(task)
+                delete_task(task_dictionary, str(task))
+
 def delete_task(task_dictionary, task_name):
     del task_dictionary[task_name]
 
 def task_done(task_name, delete_tasks, task_dictionary):
     """Marks tasks that contain 'task_name' in their name as 
     completed, or deletes them if the terminal command is delete"""
-    tasks_to_mark = get_matched_tasks(task_dictionary, task_name)
+    marked_tasks = get_matched_tasks(task_dictionary, task_name)
 
-    if len(tasks_to_mark) > 0:
-        #Prompt depending on completing or deleting
-        prompt = "Do you want to delete these tasks?" if delete_tasks else "Do you want to mark these tasks as completed?"
-        print("\t{}: ".format(prompt))
-        for task in tasks_to_mark:
-            print("\t -{}".format(task))
+    if len(marked_tasks) > 0:
+        print_matched_tasks_prompt(marked_tasks, delete_tasks)
         confirmation = input("\n\ty/n: ")
         if confirmation == 'y':
-            for task in tasks_to_mark:
-                if not delete_tasks:
-                    task_dictionary["COMPLETE"].append(task)
-                delete_task(task_dictionary, str(task))
+            delete_selected_tasks(task_dictionary, marked_tasks, delete_tasks)
             print("\tDone.")
         else:
             print("\tNo changes made.")
