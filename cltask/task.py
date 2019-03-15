@@ -77,7 +77,7 @@ def task_done(task_name, delete_tasks, task_dictionary):
     completed, or deletes them if the terminal command is delete"""
     marked_tasks = get_matched_tasks(task_dictionary, task_name)
 
-    if len(marked_tasks) > 0:
+    if marked_tasks:
         print_matched_tasks_prompt(marked_tasks, delete_tasks)
         confirmation = input("\n\ty/n: ")
         if confirmation == 'y':
