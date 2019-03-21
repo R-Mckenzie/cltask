@@ -1,35 +1,47 @@
 #!/usr/bin/env python3
-
 import os
 import argparse
 import json
+from datetime import date
 from pathlib import Path
 
 home = str(Path.home())
 task_directory_location = home+"/.cltask" #The directory of the saved task list
 task_file_location = home+"/.cltask/tasks.json" #The location of the saved task list
 
+'''
+#-- Tasks are dictionaries where the key is the task name and the value is the priority
+{'Task name', priority(an integer)}
+
+#-- The saved task file is a dictionary containing two lists of tasks
+{
+    active: [{'task1':3}, {'task2':1}, etc...],
+    complete: [{'task x':3, 'complete date':DATE}],
+}
+'''
+
 #----- File Handling Functions -----#
-def create_task_directory():
-    """Create the task file's directory if it does not already exist"""
+def ensure_file_exists():
+    """This function makes sure that there is a task file for the app to work with"""
+    def create_example_file():
+        """returns a string of json representing the example task dictionary"""
+        example_task_dictionary = {
+                "Active": [{"Example task":5}]
+                "Complete": [{"Example completed task":5, "Date": date.today()}]}
+        return json.dumps(example_task_dictionary)
+
+    # create .cltask directory if it doesn't exist
     try:
         os.makedirs(task_directory_location)
     except (IsADirectoryError, FileExistsError):
         pass
 
-def create_task_file():
-    """Create the task file if it does not already exist"""
+    # create a new task file with example data if necessary
     try:
         with open(task_file_location, 'xt') as f:
-            f.write('{"Example Task": 5, "COMPLETE" : []}')
+            f.write(create_example_file())
     except FileExistsError:
         pass
-
-def ensure_file_exists():
-    """Calls two methods that create the directory and file respectively. They are
-    created separately to account for cases where the director exists but not the file"""
-    create_task_directory()
-    create_task_file()
 
 def save_tasks(task_dictionary):
     """Save the working task dictionary to the task file"""
