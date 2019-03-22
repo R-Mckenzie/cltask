@@ -10,12 +10,9 @@ task_directory_location = home+"/.cltask" #The directory of the saved task list
 task_file_location = home+"/.cltask/tasks.json" #The location of the saved task list
 
 '''
-#-- Tasks are dictionaries where the key is the task name and the value is the priority
-{'Task name', priority(an integer)}
-
-#-- The saved task file is a dictionary containing two lists of tasks
+#-- The saved task file is a dictionary containing two dictionaries of tasks
 {
-    active: [{'task1':3}, {'task2':1}, etc...],
+    active: [{'task1':3, 'task2':1}, etc...],
     complete: [{'task x':3, 'complete date':DATE}],
 }
 '''
@@ -26,7 +23,7 @@ def ensure_file_exists():
     def create_example_file():
         """returns a string of json representing the example task dictionary"""
         example_task_dictionary = {
-                "Active": [{"Example task":5}]
+                "Active": [{"Example task":5, "Example 2":3}]
                 "Complete": [{"Example completed task":5, "Date": date.today()}]}
         return json.dumps(example_task_dictionary)
 
@@ -57,60 +54,35 @@ def load_tasks():
 #----- Adding and Removing Tasks -----#
 def add_task(task_name, priority, task_dictionary):
     """Add tasks to the working task dictionary"""
-    if task_name in task_dictionary.keys():
-        print("There is already a task by that name in the list. No new tasks were added.")
+    if task_name in task_dictionary["Active"].keys():
+            print("There is already a task by that name in the list. No new tasks were added.")
     else:
-        task_dictionary[task_name] = priority
+        task_dictionary["Active"][task_name] = priority
 
-def get_matched_tasks(task_dictionary, string_to_match):
-    matched_tasks = []
-    for task in task_dictionary.keys():
-        if task.find(string_to_match) >= 0 and task != "COMPLETE":
-            matched_tasks.append(task)
-    return matched_tasks
-
-def print_matched_tasks_prompt(matched_tasks, delete_tasks):
-    #Change prompt depending on completing or deleting
-    delete_prompt = "Do you want to delete these tasks?"
-    complete_prompt = "Do you want to mark these tasks as completed?"
-    print("\t{}: ".format(delete_prompt if delete_tasks else complete_prompt))
-    for task in matched_tasks:
-        print("\t -{}".format(task))
-
-def delete_selected_tasks(task_dictionary, selected_tasks, should_delete):
-    for task in selected_tasks:
-        if not should_delete:
-            task_dictionary["COMPLETE"].append(task)
-        delete_task(task_dictionary, str(task))
-
-def delete_task(task_dictionary, task_name):
-    del task_dictionary[task_name]
-
+#TODO: change functionality so that task done lists active tasks before asking which one to complete
 def task_done(task_name, delete_tasks, task_dictionary):
     """Marks tasks that contain 'task_name' in their name as 
     completed, or deletes them if the terminal command is delete"""
-    marked_tasks = get_matched_tasks(task_dictionary, task_name)
-
-    if marked_tasks:
-        print_matched_tasks_prompt(marked_tasks, delete_tasks)
-        confirmation = input("\n\ty/n: ")
-        if confirmation == 'y':
-            delete_selected_tasks(task_dictionary, marked_tasks, delete_tasks)
-            print("\tDone.")
-        else:
-            print("\tNo changes made.")
+    active_tasks = get_active_tasks_ordered(task_dictionary)
+    if active_tasks:
+        list_active_tasks(task_dictionary)
+        # Ask which index to delete
+        task_to_delete = input("Which task have you completed? (1-{}): ").format(len(active_tasks))
+        # Validate input
+        # Use name of selection to delete task_dictionary["Active"][--name--]
     else:
-        print("\tNo tasks match '{}'".format(task_name))
+        print("There are no active tasks to complete.")
 
 #----- Listing Tasks -----#
+def get_active_tasks_ordered(task_dictionary):
+    """Returns a list of the active tasks in order of priority"""
+    sorted_tasks = sorted(zip(task_dictionary["Active"].values(), task_dictionary["Active"].keys()))
+    return list(sorted_tasks)
+
 def list_active_tasks(task_dictionary):
     """List the tasks in order of priority, with some nice formatting"""
-    active_tasks = task_dictionary.copy()
-    #We need to make a copy so we can ignore the "COMPLETED" key in the dictionary
-    del active_tasks["COMPLETE"]
-    sorted_tasks = sorted(zip(active_tasks.values(), active_tasks.keys()))
     print("\tActive Tasks: ")
-    for index, task in enumerate(sorted_tasks, 1):
+    for index, task in enumerate(get_active_tasks_ordered(task_dictionary), 1):
         print('{i:>9}. {task:-<50}> priority {p} '.format('-', i=index, task=task[1]+' ', p=task[0]))
 
 def list_completed_tasks(task_dictionary):
