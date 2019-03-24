@@ -13,7 +13,7 @@ task_file_location = home+"/.cltask/tasks.json" #The location of the saved task 
 #-- The saved task file is a dictionary containing two dictionaries of tasks
 {
     Active: [{'task1':3, 'task2':1}, etc...],
-    Complete: [{'task x':3, 'complete date':DATE}],
+    Complete: [{'task x':3, 'complete date':DATE}, {**:**, **:**}, ...],
 }
 '''
 
@@ -67,20 +67,20 @@ def task_done(task_name, delete_tasks, task_dictionary):
         list_active_tasks(task_dictionary)
         task_count = len(active_tasks)
         task_to_complete = input("\n\tWhich task have you completed? (1-{}): ".format(task_count))
+
         # Only use valid input. We subtract one to get the correct array index
         if task_to_complete.isdigit() and (0 <= int(task_to_complete)-1 < task_count):
-            # Add the date to the task
+            # Add the date to the task and add it to complete list
             task_tuple = active_tasks[int(task_to_complete)-1]
             completed = {task_tuple[0]: task_tuple[1], "Date": str(date.today())}
-            # Add it to the completed dictionary
             task_dictionary["Complete"].append(completed)
-            # Use name of selection to delete task_dictionary["Active"][--name--]
+
             del task_dictionary["Active"][task_tuple[0]]
-            print("\t'{}' marked as complete".format(task_tuple[0]))
+            print("\t'{}' marked as complete.".format(task_tuple[0]))
         else:
-            print("\tThat is not a valid input. Nothing has been completed")
+            print("\tThat is not a valid input. Nothing has been completed.")
     else:
-        print("\n\tThere are no active tasks to complete.")
+        print("\tThere are no active tasks to complete.")
 
 #----- Listing Tasks -----#
 def get_active_tasks_ordered(task_dictionary):
@@ -98,12 +98,21 @@ def list_active_tasks(task_dictionary):
 def list_completed_tasks(task_dictionary):
     """List the tasks in order of priority, with some nice formatting"""
     print("\tCompleted Tasks: ")
-    for index, task in enumerate(task_dictionary["COMPLETE"], 1):
-        print('{i:>9}. {task}'.format('-', i=index, task=task))
+    complete_list = task_dictionary["Complete"]
+    for task in complete_list:
+        task_name = ""
+        task_date = ""
+        for k, v in task.items():
+            if k != "Date":
+                task_name = k
+            else:
+                task_date = v
+        print('{i:>9} {task:-<50}> completed: {p} '.format(i='*', task=task_name+' ', p=task_date))
+
 
 def init_argparse():
     """Setup the argument parser"""
-    app_description = "cltask is a simple command line task manager"
+    app_description = "cltask is a simple command line task manager."
     parser = argparse.ArgumentParser(description=app_description)
     parser.add_argument('command',
             help="Which command to run",
@@ -129,8 +138,7 @@ def main():
         #List is the default functionality if no other commands given
         list_active_tasks(task_dictionary)
     if args.command == "completed":
-        #list_completed_tasks(task_dictionary)
-        pass
+        list_completed_tasks(task_dictionary)
     if args.command == "add":
         #Input is stored as a list because of the nargs. Here we convert it to a string split with spaces
         add_task(user_input, args.priority, task_dictionary)
