@@ -12,8 +12,8 @@ task_file_location = home+"/.cltask/tasks.json" #The location of the saved task 
 '''
 #-- The saved task file is a dictionary containing two dictionaries of tasks
 {
-    active: [{'task1':3, 'task2':1}, etc...],
-    complete: [{'task x':3, 'complete date':DATE}],
+    Active: [{'task1':3, 'task2':1}, etc...],
+    Complete: [{'task x':3, 'complete date':DATE}],
 }
 '''
 
@@ -23,8 +23,8 @@ def ensure_file_exists():
     def create_example_file():
         """returns a string of json representing the example task dictionary"""
         example_task_dictionary = {
-                "Active": [{"Example task":5, "Example 2":3}]
-                "Complete": [{"Example completed task":5, "Date": date.today()}]}
+                "Active": {"Example task":5, "Example 2":3},
+                "Complete": [{"Example completed task":5, "Date": str(date.today())}],}
         return json.dumps(example_task_dictionary)
 
     # create .cltask directory if it doesn't exist
@@ -59,32 +59,42 @@ def add_task(task_name, priority, task_dictionary):
     else:
         task_dictionary["Active"][task_name] = priority
 
-#TODO: change functionality so that task done lists active tasks before asking which one to complete
 def task_done(task_name, delete_tasks, task_dictionary):
     """Marks tasks that contain 'task_name' in their name as 
     completed, or deletes them if the terminal command is delete"""
     active_tasks = get_active_tasks_ordered(task_dictionary)
     if active_tasks:
         list_active_tasks(task_dictionary)
-        # Ask which index to delete
-        task_to_delete = input("Which task have you completed? (1-{}): ").format(len(active_tasks))
-        # Validate input
-        # Use name of selection to delete task_dictionary["Active"][--name--]
+        task_count = len(active_tasks)
+        task_to_complete = input("\n\tWhich task have you completed? (1-{}): ".format(task_count))
+        # Only use valid input. We subtract one to get the correct array index
+        if task_to_complete.isdigit() and (0 <= int(task_to_complete)-1 < task_count):
+            # Add the date to the task
+            task_tuple = active_tasks[int(task_to_complete)-1]
+            completed = {task_tuple[0]: task_tuple[1], "Date": str(date.today())}
+            # Add it to the completed dictionary
+            task_dictionary["Complete"].append(completed)
+            # Use name of selection to delete task_dictionary["Active"][--name--]
+            del task_dictionary["Active"][task_tuple[0]]
+            print("\t'{}' marked as complete".format(task_tuple[0]))
+        else:
+            print("\tThat is not a valid input. Nothing has been completed")
     else:
-        print("There are no active tasks to complete.")
+        print("\n\tThere are no active tasks to complete.")
 
 #----- Listing Tasks -----#
 def get_active_tasks_ordered(task_dictionary):
-    """Returns a list of the active tasks in order of priority"""
-    sorted_tasks = sorted(zip(task_dictionary["Active"].values(), task_dictionary["Active"].keys()))
-    return list(sorted_tasks)
+    """Returns a list of tuples of the active tasks in order of priority"""
+    sorted_tasks = sorted(task_dictionary["Active"].items(), key=lambda x: x[1])
+    return sorted_tasks
 
 def list_active_tasks(task_dictionary):
     """List the tasks in order of priority, with some nice formatting"""
     print("\tActive Tasks: ")
     for index, task in enumerate(get_active_tasks_ordered(task_dictionary), 1):
-        print('{i:>9}. {task:-<50}> priority {p} '.format('-', i=index, task=task[1]+' ', p=task[0]))
+        print('{i:>9}. {task:-<50}> priority {p} '.format('-', i=index, task=task[0]+' ', p=task[1]))
 
+#TODO: COMPLETE THIS --------->
 def list_completed_tasks(task_dictionary):
     """List the tasks in order of priority, with some nice formatting"""
     print("\tCompleted Tasks: ")
@@ -119,7 +129,8 @@ def main():
         #List is the default functionality if no other commands given
         list_active_tasks(task_dictionary)
     if args.command == "completed":
-        list_completed_tasks(task_dictionary)
+        #list_completed_tasks(task_dictionary)
+        pass
     if args.command == "add":
         #Input is stored as a list because of the nargs. Here we convert it to a string split with spaces
         add_task(user_input, args.priority, task_dictionary)
