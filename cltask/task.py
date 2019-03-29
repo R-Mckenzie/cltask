@@ -94,7 +94,6 @@ def list_active_tasks(task_dictionary):
     for index, task in enumerate(get_active_tasks_ordered(task_dictionary), 1):
         print('{i:>9}. {task:-<50}> priority {p} '.format('-', i=index, task=task[0]+' ', p=task[1]))
 
-#TODO: COMPLETE THIS --------->
 def list_completed_tasks(task_dictionary):
     """List the tasks in order of priority, with some nice formatting"""
     print("\tCompleted Tasks: ")
