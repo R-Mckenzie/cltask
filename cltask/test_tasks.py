@@ -7,8 +7,8 @@ class TestAddingRemoving(unittest.TestCase):
         self.task_one = "Example task 1"
         self.task_two = "Example task 2"
         self.task_dictionary = {
-                self.task_one : 5,
-                self.task_two : 2,
+                "Active": {self.task_one: 5, self.task_two: 2},
+                "Complete": [{},{}]
                 }
 
     def test_add_task(self):
@@ -16,12 +16,13 @@ class TestAddingRemoving(unittest.TestCase):
         priority = 9
         self.assertNotIn(task_name, self.task_dictionary)
         task.add_task(task_name, priority, self.task_dictionary)
-        self.assertIn(task_name, self.task_dictionary)
+        self.assertIn(task_name, self.task_dictionary["Active"])
 
-    def test_remove_task(self):
-        self.assertIn(self.task_one, self.task_dictionary)
-        task.delete_task(self.task_dictionary, self.task_one)
-        self.assertNotIn(self.task_one, self.task_dictionary)
+    def test_complete_task(self):
+        self.assertIn(self.task_one, self.task_dictionary["Active"])
+        task.complete_task({self.task_one: 5}, self.task_dictionary)
+        self.assertNotIn(self.task_one, self.task_dictionary["Active"])
+        self.assertIn(self.task_one, self.task_dictionary["Complete"][0])
 
 if __name__ == "__main__":
     unittest.main()

@@ -59,6 +59,16 @@ def add_task(task_name, priority, task_dictionary):
     else:
         task_dictionary["Active"][task_name] = priority
 
+def delete_task(task_name, task_dictionary):
+    del task_dictionary["Active"][task_name]
+
+def complete_task(task_tuple, task_dictionary):
+    task_name = task_tuple[0]
+    # Add the date to the task and add it to complete list
+    completed = {task_name: task_tuple[1], "Date": str(date.today())}
+    task_dictionary["Complete"].append(completed)
+    delete_task(task_name, task_dictionary)
+
 def task_done(task_name, delete_tasks, task_dictionary):
     """Marks tasks that contain 'task_name' in their name as 
     completed, or deletes them if the terminal command is delete"""
@@ -70,13 +80,13 @@ def task_done(task_name, delete_tasks, task_dictionary):
 
         # Only use valid input. We subtract one to get the correct array index
         if task_to_complete.isdigit() and (0 <= int(task_to_complete)-1 < task_count):
-            # Add the date to the task and add it to complete list
             task_tuple = active_tasks[int(task_to_complete)-1]
-            completed = {task_tuple[0]: task_tuple[1], "Date": str(date.today())}
-            task_dictionary["Complete"].append(completed)
-
-            del task_dictionary["Active"][task_tuple[0]]
-            print("\t'{}' marked as complete.".format(task_tuple[0]))
+            if not delete_tasks:
+                complete_task(task_tuple, task_dictionary)
+                print("\t'{}' marked as complete.".format(task_tuple[0]))
+            else:
+                delete_task(task_tuple[0], task_dictionary)
+                print("\t'{}' deleted.".format(task_tuple[0]))
         else:
             print("\tThat is not a valid input. Nothing has been completed.")
     else:
@@ -90,9 +100,12 @@ def get_active_tasks_ordered(task_dictionary):
 
 def list_active_tasks(task_dictionary):
     """List the tasks in order of priority, with some nice formatting"""
-    print("\tActive Tasks: ")
-    for index, task in enumerate(get_active_tasks_ordered(task_dictionary), 1):
-        print('{i:>9}. {task:-<50}> priority {p} '.format('-', i=index, task=task[0]+' ', p=task[1]))
+    if get_active_tasks_ordered(task_dictionary):
+        print("\tActive Tasks: ")
+        for index, task in enumerate(get_active_tasks_ordered(task_dictionary), 1):
+            print('{i:>9}. {task:-<50}> priority {p} '.format('-', i=index, task=task[0]+' ', p=task[1]))
+    else:
+        print("\tYour task list is empty!")
 
 def list_completed_tasks(task_dictionary):
     """List the tasks in order of priority, with some nice formatting"""
